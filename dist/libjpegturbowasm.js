@@ -1,4 +1,4 @@
-var libjpegturbowasm = (() => {
+var instantiate = (() => {
   var _scriptName = import.meta.url;
   
   return (
@@ -12,4 +12,4 @@ var Module=moduleArg;var readyPromiseResolve,readyPromiseReject;var readyPromise
 }
 );
 })();
-export default libjpegturbowasm;
+export default instantiate;
