@@ -11,10 +11,10 @@
    if (CMAKE_BUILD_TYPE STREQUAL Debug)
      SET(linkFlags "-g4")
    else() # Either MinSizeRel, RelWithDebInfo or Release, all which run with optimizations enabled.
-     SET(linkFlags "-O3")
+     SET(linkFlags "-O3 ")
    endif()
 
-   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -msimd128")
+   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -msimd128 -lembind --emit-tsd ./libjpegturbowasm.d.ts")
 
    set_target_properties(
     libjpegturbowasm

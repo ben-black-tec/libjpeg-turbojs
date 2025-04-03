@@ -5,5 +5,6 @@ mkdir -p build
 (cd build && emcmake cmake -DCMAKE_BUILD_TYPE=Release ..) &&
 (cd build && emmake make VERBOSE=1 -j 16) &&
 cp ./build/src/libjpegturbowasm.js ./dist &&
+cp ./build/src/libjpegturbowasm.d.ts ./dist &&
 cp ./build/src/libjpegturbowasm.wasm ./dist &&
 (cd test/node; npm run test)

@@ -1,12 +1,15 @@
 {
   "name": "libjpeg-turbojs-es-simd",
   "version": "0.1.0",
-  "main": "index.js",
+  "module": "dist/libjpegturbowasm.js",
   "description": "Wasm jpeg encoder and decoder supporting the browser. Repackaged from Squoosh App.",
   "repository": "ben-black-tec/libjpeg-turbojs",
      "type": "module",
     "scripts": {
       "test": "node index.js"
+    },
+    "devDependencies": {
+      "typescript": "~5.7.3"
     },
     "keywords": [],
     "license": "ISC",
