@@ -17,7 +17,7 @@
 /// JavaScript API for decoding JPEG bistreams with libjpeg-turbo
 /// </summary>
 class JPEGDecoder {
-  public: 
+  public:
   /// <summary>
   /// Constructor for decoding a JPEG image from JavaScript.
   /// </summary>
@@ -37,13 +37,13 @@ class JPEGDecoder {
     encoded_.resize(encodedSize);
     return emscripten::val(emscripten::typed_memory_view(encoded_.size(), encoded_.data()));
   }
-  
+
   /// <summary>
   /// Returns a TypedArray of the buffer allocated in WASM memory space that
   /// holds the decoded pixel data
   /// </summary>
   emscripten::val getDecodedBuffer() {
-    return emscripten::val(emscripten::typed_memory_view(decoded_.size(), decoded_.data()));
+    return emscripten::val(emscripten::typed_memory_view(decoded_rgba_.size(), decoded_rgba_.data()));
   }
 #else
   /// <summary>
@@ -62,10 +62,10 @@ class JPEGDecoder {
       return decoded_;
   }
 #endif
- 
+
   /// <summary>
   /// Reads the header from an encoded JPEG bitstream.  The caller must have
-  /// copied the JPEG encoded bitstream into the encoded buffer before 
+  /// copied the JPEG encoded bitstream into the encoded buffer before
   /// calling this method, see getEncodedBuffer() and getEncodedBytes() above.
   /// </summary>
   void readHeader() {
@@ -73,7 +73,7 @@ class JPEGDecoder {
     if ((tjInstance = tjInitDecompress()) == NULL) {
         throw("initializing decompressor\n");
     }
-    
+
     if(readHeader_i(tjInstance) < 0) {
         tjDestroy(tjInstance);  tjInstance = NULL;
         throw("reading header");
@@ -92,7 +92,7 @@ class JPEGDecoder {
     if ((tjInstance = tjInitDecompress()) == NULL) {
         throw("initializing decompressor\n");
     }
-    
+
     if(readHeader_i(tjInstance)) {
         tjDestroy(tjInstance);
         throw("error reading header\n");
@@ -103,10 +103,29 @@ class JPEGDecoder {
     const size_t destinationSize = frameInfo_.width * frameInfo_.height * tjPixelSize[pixelFormat];
     decoded_.resize(destinationSize);
 
-    if (tjDecompress2(tjInstance, encoded_.data(), encoded_.size(), decoded_.data(), 
+    if (tjDecompress2(tjInstance, encoded_.data(), encoded_.size(), decoded_.data(),
         frameInfo_.width, 0, frameInfo_.height, pixelFormat, 0) < 0) {
         tjDestroy(tjInstance);
         throw("~~decompressing JPEG image\n");
+    }
+    // javascript works better with images in RGBA format rather than RGB, converting here for efficiency
+    const size_t rgbaSize = frameInfo_.width * frameInfo_.height * 4;
+    decoded_rgba_.resize(rgbaSize);
+    if(pixelFormat == TJPF_RGB){
+      for(long i = 0; i < frameInfo_.width * frameInfo_.height; i++){
+        for(int j = 0; j < 3; j++){
+          decoded_rgba_[i*4+j] = decoded_[i*3+j];
+        }
+        decoded_rgba_[i*4+3] = 255;
+      }
+    }
+    else{
+      for(long i = 0; i < frameInfo_.width * frameInfo_.height; i++){
+        for(int j = 0; j < 3; j++){
+          decoded_rgba_[i*4+j] = decoded_[i];
+        }
+        decoded_rgba_[i*4+3] = 255;
+      }
     }
 
     tjDestroy(tjInstance);
@@ -142,12 +161,13 @@ class JPEGDecoder {
         frameInfo_.bitsPerSample = 8;
         frameInfo_.isSigned = false;
         frameInfo_.componentCount = inColorspace == 2 ? 1 : 3;
-        
+
         return 0;
     }
 
     std::vector<uint8_t> encoded_;
     std::vector<uint8_t> decoded_;
+    std::vector<uint8_t> decoded_rgba_;
     FrameInfo frameInfo_;
     bool isReversible_;
 };
