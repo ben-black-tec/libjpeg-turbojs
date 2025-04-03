@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.16)
 project (libjpeg-turbojs
   LANGUAGES CXX)
 
+set(CMAKE_C_FLAGS_RELEASE "-O3 -msse2 -msimd128")
+
 # set the build type if not specified
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
